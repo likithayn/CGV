@@ -1,0 +1,388 @@
+#include <stdio.h>
+#include <string>
+#include <cstring>
+#include <glut.h>
+
+
+#pragma warning(disable : 4996)
+
+// Define the arrow vertices
+GLdouble p1 = rand() % 500 + 1;
+GLdouble p2 = rand() % 500 + 1;
+GLdouble x1[] = { p1, p2 };
+GLdouble x2[] = { p1 + 11.5, p2 };
+GLdouble x3[] = { p1 + 11.5, p2 + 40 };
+GLdouble x4[] = { p1, p2 + 40 };
+GLdouble x5[] = { p1 - 10, p2 + 25 };
+GLdouble x6[] = { p1 + 20, p2 + 25 };
+GLdouble x7[] = { p1 + 5.75, p2 + 50 };
+GLint direction = 1;
+
+GLdouble speed = 3;
+GLboolean movingRight = false;
+GLboolean movingTop = true;
+
+GLint score = 0;
+GLint chancesLeft = 10;
+
+GLboolean check = false;
+GLint x, y;
+GLint blink = 0;
+
+// Regenerate a new arrow at a new position 
+void generateNewArrow() {
+
+	p1 = rand() % 500 + 1;
+	p2 = rand() % 500 + 1;
+
+	x1[0] = p1;
+	x1[1] = p2;
+	x2[0] = p1 + 11.5;
+	x2[1] = p2;
+	x3[0] = p1 + 11.5;
+	x3[1] = p2 + 40;
+	x4[0] = p1;
+	x4[1] = p2 + 40;
+	x5[0] = p1 - 10;
+	x5[1] = p2 + 25;
+	x6[0] = p1 + 20;
+	x6[1] = p2 + 25;
+	x7[0] = p1 + 5.75;
+	x7[1] = p2 + 50;
+	direction = rand() % 2 + 1;
+}
+// Set up the projection and modelview matrices
+void myInit(void)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, 500, 0, 500);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+bool checkIfInside(int x1, int y1, int x2, int y2, int x, int y) {
+	if (x > x1 and x < x2 and y > y1 and y < y2)
+		return true;
+	return false;
+}
+
+void mouse(int button, int state, int mx, int my) {
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+
+		check = true;
+		x = mx;
+		y = 500 - my;
+		printf("%d, %d\n", x, y);
+		if (checkIfInside(x1[0], x1[1], x2[0], x3[1], x, y)|| checkIfInside(x5[0], x5[1], x6[0], x7[1], x, y)) {
+
+			score++;
+			printf("COLLECTED!!\n");
+			if (score % 10 == 0) {
+				speed += 1;
+			}
+			generateNewArrow();
+		}
+		else {
+			chancesLeft--;
+			printf("MISSED\n");
+			if (chancesLeft == 0) {
+				printf("HURRAY YOU COLLECTED %d KITES :) \n", score);
+				exit(0);
+			}
+		}
+	}
+	glutPostRedisplay();
+}
+
+
+// Set up a timer to control the movement speed
+void timerFunc(int value) {
+
+	if (movingTop) {
+		x1[1] += speed;
+		x2[1] += speed;
+		x3[1] += speed;
+		x4[1] += speed;
+		x5[1] += speed;
+		x6[1] += speed;
+		x7[1] += speed;
+	}
+
+
+	if (x1[0] > 500) {
+		movingRight = false;
+		generateNewArrow();
+	}
+	if (x2[0] < 0) {
+		movingRight = true;
+		generateNewArrow();
+	}
+	if (x2[1] > 500) {
+		movingTop = true;
+		generateNewArrow();
+	}
+	if (x3[1] < 0) {
+		movingTop = false;
+		generateNewArrow();
+	}
+
+	glutPostRedisplay();
+	glutMouseFunc(mouse);
+	glutTimerFunc(30, timerFunc, 0);
+}
+
+
+
+void dispFunc(void)
+{
+	glClearColor(0.0f, 1.0f, 1.0, 0.0f);
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glRasterPos2i(410, 480);
+	const char* text = "Score: ";
+	for (const char* c = text; *c != '\0'; c++) {
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, *c);
+	}
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glRasterPos2i(467, 479);
+	std::string s = std::to_string(score);
+	for (const char& c : s) {
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, c);
+	}
+
+	if (chancesLeft <= 5) {
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glRasterPos2i(10, 480);
+		const char* text = "Chances Left: ";
+		for (const char* c = text; *c != '\0'; c++) {
+			glutBitmapCharacter(GLUT_BITMAP_9_BY_15, *c);
+		}
+
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glRasterPos2i(129, 479);
+		std::string s = std::to_string(chancesLeft);
+		for (const char& c : s) {
+			glutBitmapCharacter(GLUT_BITMAP_9_BY_15, c);
+		}
+	}
+
+	glColor3f(0, 0, 0);
+	glBegin(GL_POLYGON);
+	glVertex2dv(x1);
+	glVertex2dv(x2);
+	glVertex2dv(x3);
+	glVertex2dv(x4);
+	glEnd();
+	glBegin(GL_TRIANGLES);
+	glVertex2dv(x3);
+	glVertex2dv(x4);
+	glVertex2dv(x7);
+	glEnd();
+	
+	glLineWidth(5);
+	glBegin(GL_LINES);
+	glVertex2dv(x5);
+	glVertex2dv(x7);
+	glVertex2dv(x6);
+	glVertex2dv(x7);
+	glEnd();
+
+	glColor3f(1, 0, 0);
+	glBegin(GL_POLYGON);
+	glVertex2f(300, 450);
+	glVertex2f(315, 430);
+	glVertex2f(300, 400);
+	glVertex2f(285, 430);
+	glEnd();
+	glColor3f( 0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex2f(300, 401);
+	glVertex2f(300, 385);
+	glEnd();
+
+	glColor3f(1, 0, 1);
+	glBegin(GL_POLYGON);
+	glVertex2f(100, 430);
+	glVertex2f(115, 410);
+	glVertex2f(100, 380);
+	glVertex2f(85, 410);
+	glEnd();
+	glColor3f(0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex2f(100, 381);
+	glVertex2f(100, 365);
+	glEnd();
+
+	glColor3f(1.5, 1, 0);
+	glBegin(GL_POLYGON);
+	glVertex2f(400, 480);
+	glVertex2f(415, 460);
+	glVertex2f(400, 430);
+	glVertex2f(385, 460);
+	glEnd();
+	glColor3f(0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex2f(400, 431);
+	glVertex2f(400, 415);
+	glEnd();
+
+	glColor3f(1, 0.5, 0);
+	glBegin(GL_POLYGON);
+	glVertex2f(480, 450);
+	glVertex2f(495, 430);
+	glVertex2f(480, 400);
+	glVertex2f(465, 430);
+	glEnd();
+	glColor3f(0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex2f(480, 401);
+	glVertex2f(480, 385);
+	glEnd();
+
+	glColor3f(0, 0, 1);
+	glBegin(GL_POLYGON);
+	glVertex2f(200, 470);
+	glVertex2f(215, 450);
+	glVertex2f(200, 420);
+	glVertex2f(185, 450);
+	glEnd();
+	glColor3f(0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex2f(200, 421);
+	glVertex2f(200, 405);
+	glEnd();
+
+	glColor3f(0, 1, 0);
+	glBegin(GL_POLYGON);
+	glVertex2f(40, 485);
+	glVertex2f(55, 465);
+	glVertex2f(40, 435);
+	glVertex2f(25, 465);
+	glEnd();
+	glColor3f(0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex2f(40, 436);
+	glVertex2f(40, 420);
+	glEnd();
+
+
+
+	glFlush();
+}
+
+void menu(int option) {
+	switch (option) {
+	case 1:
+		speed = 3;
+		break;
+	case 2:
+		speed = 6;
+		break;
+	case 3:
+		speed = 9;
+		break;
+	case 4:
+		exit(0);
+		break;
+	default:
+		break;
+	}
+}
+
+void mouseClick(int button, int state, int x, int y) {
+
+	// Check if the "Start" button was clicked
+	if (x >= 175 && x <= 325 && y >= 200 && y <= 250 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+
+		printf("Clicked: %d, %d\n", x, y);
+
+		int m1 = glutCreateMenu(menu);
+		glutAddMenuEntry("Easy", 1);
+		glutAddMenuEntry("Medium", 2);
+		glutAddMenuEntry("Hard", 3);
+		glutCreateMenu(menu);
+		glutAddSubMenu("Speed", m1);
+		glutAddMenuEntry("Quit", 4);
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+		glutDisplayFunc(dispFunc);
+		glutTimerFunc(0, timerFunc, 0);
+		glutPostRedisplay();
+	}
+
+	// Check if the "Quit" button was clicked
+	if (x >= 175 && x <= 325 && y >= 300 && y <= 350 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		exit(0);
+	}
+}
+
+void timerFuncStartPage(int value) {
+
+	glutPostRedisplay();
+	glutTimerFunc(500, timerFuncStartPage, 0);
+}
+
+void drawStartMenu() {
+
+	glClearColor(0.0f, 0.5f, 0.5f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// Draw a title label
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glRasterPos2i(100, 450);
+	std::string title = "HIT AND COLLECT THE KITES";
+	for (const char& c : title) {
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+	}
+
+	if (blink % 2 == 0) {
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glRasterPos2i(95, 400);
+		std::string title2 = "CLICK ON THE ARROWS TO COLLECT THE KITES";
+		for (const char& c : title2) {
+			glutBitmapCharacter(GLUT_BITMAP_9_BY_15, c);
+		}
+	}
+	blink++;
+
+
+	// "Start" button
+	glColor3f(0.5f, 1.0f, 1.0f);
+	glRecti(195, 240, 325, 290);
+	glColor3f(0.0f, .0f, 0.0f);
+	glRasterPos2i(245, 265);
+	std::string start_label = "Start";
+	for (const char& c : start_label) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+	}
+
+	// "Quit" button
+	glColor3f(0.5f, 1.0f, 1.0f);
+	glRecti(195, 140, 325, 190);
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glRasterPos2i(245, 165);
+	std::string quit_label = "Quit";
+	for (const char& c : quit_label) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+	}
+
+	glutWireTeapot(1);
+	glFlush();
+	glutSwapBuffers();
+}
+
+void main(int argc, char** argv)
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+	glutInitWindowSize(500, 500);
+	glutInitWindowPosition(100, 250);
+	glutCreateWindow("HIT AND COLLECT THE KITES GAME");
+	myInit();
+	glutDisplayFunc(drawStartMenu);
+	glutMouseFunc(mouseClick);
+	glutTimerFunc(0, timerFuncStartPage, 0);
+	glutMainLoop();
+}
