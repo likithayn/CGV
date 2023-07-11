@@ -27,11 +27,11 @@ void Bresenhamline()
 	int twodx = 2 * dx, twodxMinustwody = 2 * (dx - dy);
 	x = xx;
 	y = yy;
-	glColor3f(1, 0, 0); // Set color to red.
-	glPointSize(3); //Set point size to 3
+	glColor3f(1, 0, 0); 
+	glPointSize(3); 
 	if (dx > dy)
 	{
-		//For slope m&lt;1
+		
 		p = 2 * dy - dx;
 		setPixel(x, y);
 		while (x < xend)
@@ -54,7 +54,7 @@ void Bresenhamline()
 	}
 	else
 	{
-		//For slope m > 1
+		
 		p = 2 * dx - dy;
 		setPixel(x, y);
 		while (y < yend)
@@ -76,23 +76,23 @@ void Bresenhamline()
 }
 void display()
 {
-	glClearColor(1, 1, 1, 1); //Specifies a background RGB color for a display window.
-	glClear(GL_COLOR_BUFFER_BIT);// Clear display window.
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
 	Bresenhamline();
-	glFlush(); // Process all OpenGL routines as quickly as possible.
+	glFlush();
 }
 int main()
 {
-	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);// Set display mode.
-	glutInitWindowPosition(100, 100); // Set top-left display-window position.
-	glutInitWindowSize(500, 500); // Set display-window width and height.
-	glutCreateWindow("Bresenham Line Drawing Algorthm ");// Create display window.
-	myinit(); // Execute initialization procedure.
+	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+	glutInitWindowPosition(100, 100); 
+	glutInitWindowSize(500, 500); 
+	glutCreateWindow("Bresenham Line Drawing Algorthm ");
+	myinit(); 
 	cout<<"Enter co - ordinates of first point :";
 	cin>>xx>>yy;
 	cout<<"Enter co - ordinates of second point :";
 	cin>>xend>>yend;
-	glutDisplayFunc(display);//Invokes a function to create a picture within current display window.
-	glutMainLoop(); //Executes the computer-graphics program.
+	glutDisplayFunc(display);
+	glutMainLoop(); 
 	return 0;
 }
