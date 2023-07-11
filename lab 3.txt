@@ -71,7 +71,7 @@ void main()
     glutInitWindowPosition(100, 100);
     glutInitWindowSize(500, 500);
     glutCreateWindow("cube rotation");
-    myinit();]
+    myinit();
     glutDisplayFunc(display);
     glutMouseFunc(mousefunc);
     glutIdleFunc(idlefunc);
